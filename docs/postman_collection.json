@@ -1,0 +1,70 @@
+{
+  "info": {
+    "name": "micro_restfull - Libros",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Crear libro (201)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript",
+        "exec": ["pm.collectionVariables.set('id', pm.response.json().id);"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"titulo\": \"Clean Code\",\n  \"autor\": \"Robert C. Martin\",\n  \"isbn\": \"9780132350884\",\n  \"precio\": 450.00,\n  \"anioPublicacion\": 2008\n}" },
+        "url": { "raw": "{{baseUrl}}/api/libros", "host": ["{{baseUrl}}"], "path": ["api", "libros"] }
+      }
+    },
+    {
+      "name": "Crear libro duplicado (409)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"titulo\": \"Clean Code\",\n  \"autor\": \"Robert C. Martin\",\n  \"isbn\": \"9780132350884\",\n  \"precio\": 450.00,\n  \"anioPublicacion\": 2008\n}" },
+        "url": { "raw": "{{baseUrl}}/api/libros", "host": ["{{baseUrl}}"], "path": ["api", "libros"] }
+      }
+    },
+    {
+      "name": "Crear libro inválido (400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"titulo\": \"\",\n  \"autor\": \"\",\n  \"isbn\": \"abc\",\n  \"precio\": -5,\n  \"anioPublicacion\": 2008\n}" },
+        "url": { "raw": "{{baseUrl}}/api/libros", "host": ["{{baseUrl}}"], "path": ["api", "libros"] }
+      }
+    },
+    {
+      "name": "Listar libros (200)",
+      "request": { "method": "GET",
+        "url": { "raw": "{{baseUrl}}/api/libros", "host": ["{{baseUrl}}"], "path": ["api", "libros"] } }
+    },
+    {
+      "name": "Obtener por id (200)",
+      "request": { "method": "GET",
+        "url": { "raw": "{{baseUrl}}/api/libros/{{id}}", "host": ["{{baseUrl}}"], "path": ["api", "libros", "{{id}}"] } }
+    },
+    {
+      "name": "Obtener por id inexistente (404)",
+      "request": { "method": "GET",
+        "url": { "raw": "{{baseUrl}}/api/libros/no-existe", "host": ["{{baseUrl}}"], "path": ["api", "libros", "no-existe"] } }
+    },
+    {
+      "name": "Actualizar libro (200)",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"titulo\": \"Clean Code (Edición revisada)\",\n  \"autor\": \"Robert C. Martin\",\n  \"isbn\": \"9780132350884\",\n  \"precio\": 499.90,\n  \"anioPublicacion\": 2008\n}" },
+        "url": { "raw": "{{baseUrl}}/api/libros/{{id}}", "host": ["{{baseUrl}}"], "path": ["api", "libros", "{{id}}"] }
+      }
+    },
+    {
+      "name": "Eliminar libro (204)",
+      "request": { "method": "DELETE",
+        "url": { "raw": "{{baseUrl}}/api/libros/{{id}}", "host": ["{{baseUrl}}"], "path": ["api", "libros", "{{id}}"] } }
+    }
+  ]
+}
