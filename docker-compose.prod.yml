@@ -1,0 +1,72 @@
+# Despliegue: aplicación + MongoDB + proxy inverso con HTTPS (Caddy)
+# Uso: docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+services:
+  mongodb:
+    image: mongo:7
+    container_name: libros-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: libros_db
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  app:
+    build: .
+    image: micro-restfull:1.0
+    container_name: libros-app
+    restart: unless-stopped
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb:27017/libros_db?authSource=admin
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - backend
+      - frontend
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/v3/api-docs > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  caddy:
+    image: caddy:2
+    container_name: libros-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+      TLS_DIRECTIVE: ${TLS_DIRECTIVE:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - frontend
+
+networks:
+  backend:
+  frontend:
+
+volumes:
+  mongo_data:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,15 @@
+# Caddy obtiene y renueva certificados de Let's Encrypt automáticamente
+# cuando DOMAIN es un dominio público. Para pruebas locales usar
+# DOMAIN=localhost y TLS_DIRECTIVE="tls internal" (certificado autofirmado).
+{$DOMAIN:localhost} {
+	{$TLS_DIRECTIVE}
+
+	encode gzip
+	reverse_proxy app:8080
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+}
